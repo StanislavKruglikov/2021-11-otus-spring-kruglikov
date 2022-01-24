@@ -1,0 +1,10 @@
+examiner:
+  score-exam-pass: 70
+  exam-data-path: i18n/exam_data
+  locale: ru-RU
+spring:
+  messages:
+    basename: i18n/messages
+  output:
+    ansi:
+      enabled: always
