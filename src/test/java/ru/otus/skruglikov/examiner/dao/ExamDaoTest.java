@@ -1,5 +1,6 @@
 package ru.otus.skruglikov.examiner.dao;
 
+import com.opencsv.exceptions.CsvException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,8 +11,10 @@ import ru.otus.skruglikov.examiner.domain.Answer;
 import ru.otus.skruglikov.examiner.domain.Exam;
 import ru.otus.skruglikov.examiner.domain.Question;
 import ru.otus.skruglikov.examiner.domain.Quiz;
+import ru.otus.skruglikov.examiner.exception.EmptyResultException;
 import ru.otus.skruglikov.examiner.exception.ExaminerException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -40,11 +43,11 @@ class ExamDaoTest {
 
     @DisplayName("корректно создает экзамен")
     @Test
-    void shouldCorrectCreateExam() throws ExaminerException {
+    void shouldCorrectCreateExam() throws Exception {
             List<Quiz> quizList = List.of(lastQuiz);
             when(quizDao.readAllSortedQuizzes(TEST_EXAM_NAME))
                 .thenReturn(quizList);
-            final Exam exam = examDao.create(TEST_EXAM_NAME);
+            final Exam exam = examDao.findByName(TEST_EXAM_NAME);
             assertAll("testExam",
                 ()-> assertEquals(TEST_EXAM_NAME,exam.getName()),
                 ()-> assertEquals(exam.getQuizList(),quizList)
@@ -53,12 +56,12 @@ class ExamDaoTest {
 
     @DisplayName("выбрасывает исключение для пустого списка вопросов по экзамену")
     @Test
-    void shouldThrowExceptionOnEmptyListQuestion() throws ExaminerException {
+    void shouldThrowExceptionOnEmptyListQuestion() throws Exception {
         List<Quiz> quizList = List.of(lastQuiz);
-        when(quizDao.readAllQuizzes(""))
+        when(quizDao.readAllSortedQuizzes(""))
             .thenReturn(quizList);
-        assertThatThrownBy(()-> examDao.create(TEST_EXAM_NAME))
-            .isInstanceOf(ExaminerException.class)
+        assertThatThrownBy(()-> examDao.findByName(TEST_EXAM_NAME))
+            .isInstanceOf(EmptyResultException.class)
             .hasMessageContaining("empty quiz list");
     }
 }

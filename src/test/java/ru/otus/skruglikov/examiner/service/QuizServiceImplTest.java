@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @DisplayName("класс QuizServiceImpl")
@@ -30,13 +31,9 @@ import static org.mockito.Mockito.when;
 class QuizServiceImplTest {
 
     @Mock
-    private ExaminerConfig examinerConfig;
-    @Mock
-    private MessageSource messageSource;
-    @Mock
     private InputOutputProviderConsoleImpl ioProvider;
     @Mock
-    private LocaleProviderAppConfigImpl localeProviderAppConfig;
+    private LocaleServiceStreamImpl localeService;
     @InjectMocks
     private QuizServiceImpl quizService;
 
@@ -57,7 +54,7 @@ class QuizServiceImplTest {
     @Test
     void shouldCorrectShowQuestion() throws IOException {
         try(final OutputStream outputStream = new ByteArrayOutputStream()) {
-            when(ioProvider.getPrintStream())
+            when(ioProvider.getOutput())
                 .thenReturn(new PrintStream(outputStream));
             quizService.showQuestion(quiz);
             final String outputStr = outputStream.toString();
@@ -69,7 +66,7 @@ class QuizServiceImplTest {
     @Test
     void shouldCorrectShowAnswers() throws IOException {
         try(final OutputStream outputStream = new ByteArrayOutputStream()) {
-            when(ioProvider.getPrintStream())
+            when(ioProvider.getOutput())
                 .thenReturn(new PrintStream(outputStream));
             quizService.showAnswers(quiz);
             final String outputStr = outputStream.toString();
@@ -84,7 +81,7 @@ class QuizServiceImplTest {
     @Test
     void shouldCorrectReturnMapAnswers() throws IOException {
         try(final OutputStream outputStream = new ByteArrayOutputStream()) {
-            when(ioProvider.getPrintStream())
+            when(ioProvider.getOutput())
                 .thenReturn(new PrintStream(outputStream));
             final Map<Integer,Answer> showAnswersMap = quizService.showAnswers(quiz);
             final Iterator<Answer> answerIterator = answers.iterator();
@@ -113,12 +110,13 @@ class QuizServiceImplTest {
     void shouldCorrectAskAnswer() throws IOException,ExaminerAssumedAnswerException {
         try(final InputStream is = new ByteArrayInputStream("1".getBytes());
             final OutputStream outputStream = new ByteArrayOutputStream()) {
-            when(ioProvider.getInputStream())
+            when(ioProvider.getInput())
                 .thenReturn(is);
-            when(ioProvider.getPrintStream())
+            when(ioProvider.getOutput())
                 .thenReturn(new PrintStream(outputStream));
-            when(messageSource.getMessage(anyString(),any(String[].class),any(Locale.class)))
-                .thenReturn("");
+            doNothing()
+                .when(localeService)
+                .output(any());
             final Map<Integer,Answer> showAnswersMap = new HashMap<>() {{ this.put(1,rightAnswer); }};
             final Integer possibleAnswer = quizService.askAnswer(showAnswersMap);
             assertEquals(Integer.valueOf(1),possibleAnswer);
@@ -133,12 +131,10 @@ class QuizServiceImplTest {
             final InputStream lessNumber = new ByteArrayInputStream("0".getBytes());
             final OutputStream outputStream = new ByteArrayOutputStream()
         ) {
-            when(messageSource.getMessage(anyString(),any(String[].class),any(Locale.class)))
-                .thenReturn("");
-            when(ioProvider.getInputStream())
+            when(ioProvider.getInput())
                 .thenReturn(overNumber)
                 .thenReturn(lessNumber);
-            when(ioProvider.getPrintStream())
+            when(ioProvider.getOutput())
                 .thenReturn(new PrintStream(outputStream));
             final Map<Integer,Answer> showAnswersMap = new HashMap<>() {{ this.put(1,rightAnswer); }};
             assertThrowsExactly(ExaminerAssumedAnswerException.class,() -> quizService.askAnswer(showAnswersMap));

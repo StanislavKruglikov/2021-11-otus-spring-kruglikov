@@ -18,8 +18,8 @@ class InputOutputProviderConsoleImplTest {
     @Test
     void shouldCorrectInitializeByConstructor() {
         assertAll("providerConsoleText",
-                () -> assertEquals(System.in,inputOutputProviderConsole.getInputStream()),
-                () -> assertEquals(System.out,inputOutputProviderConsole.getPrintStream())
+                () -> assertEquals(System.in,inputOutputProviderConsole.getInput()),
+                () -> assertEquals(System.out,inputOutputProviderConsole.getOutput())
         );
     }
 

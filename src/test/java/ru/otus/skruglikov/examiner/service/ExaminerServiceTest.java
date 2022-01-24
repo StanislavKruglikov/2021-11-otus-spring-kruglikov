@@ -1,5 +1,6 @@
 package ru.otus.skruglikov.examiner.service;
 
+import com.opencsv.exceptions.CsvException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.MessageSource;
 import org.springframework.core.io.Resource;
 import ru.otus.skruglikov.examiner.config.ExaminerConfig;
 import ru.otus.skruglikov.examiner.dao.ExamDaoDefaultImpl;
@@ -15,14 +15,13 @@ import ru.otus.skruglikov.examiner.dao.JournalEntryDaoMemoryImpl;
 import ru.otus.skruglikov.examiner.domain.Exam;
 import ru.otus.skruglikov.examiner.domain.JournalEntry;
 import ru.otus.skruglikov.examiner.domain.Student;
+import ru.otus.skruglikov.examiner.exception.EmptyResultException;
 import ru.otus.skruglikov.examiner.exception.ExaminerException;
-import ru.otus.skruglikov.examiner.provider.InputOutputProviderConsoleImpl;
-import ru.otus.skruglikov.examiner.provider.LocaleProviderAppConfigImpl;
 
 import java.io.*;
 import java.util.Collections;
-import java.util.Locale;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
@@ -37,12 +36,6 @@ class ExaminerServiceTest {
 
     @Mock
     private ExaminerConfig examinerConfig;
-    @Mock
-    private MessageSource messageSource;
-    @Mock
-    private InputOutputProviderConsoleImpl ioProvider;
-    @Mock
-    private LocaleProviderAppConfigImpl localeProviderAppConfig;
     @Mock
     private RegistrationServiceImpl registrationService;
     @Mock
@@ -66,13 +59,13 @@ class ExaminerServiceTest {
 
     @DisplayName("метод должен регестировать студента и запускать экзамен")
     @Test
-    void takeExam() throws ExaminerException, IOException {
+    void takeExam() throws Exception {
         try(final OutputStream outputStream = new ByteArrayOutputStream();
             final InputStream is = testDataResource.getInputStream()) {
             final JournalEntry journalEntryExpected = new JournalEntry(student,exam);
             when(registrationService.register())
                 .thenReturn(student);
-            when(examDao.create(anyString()))
+            when(examDao.findByName(anyString()))
                 .thenReturn(exam);
             when(journalEntryDao.create(any(),any()))
                 .thenReturn(journalEntryExpected);
@@ -81,12 +74,12 @@ class ExaminerServiceTest {
             doCallRealMethod()
                 .when(journalEntryDao)
                 .setExamScore(any(JournalEntry.class),eq(101));
-            doNothing()
-                .when(examService)
+            doAnswer(invoc -> {
+                assertEquals(journalEntryExpected,invoc.getArgument(0));
+                return null;
+            }).when(examService)
                 .showExamResult(any());
-            final JournalEntry journalEntryActual = examinerService.takeExam(exam.getName());
-            journalEntryExpected.setExamScore(101);
-            assertEquals(journalEntryExpected,journalEntryActual);
+            examinerService.takeExam(exam.getName());
         }
     }
 

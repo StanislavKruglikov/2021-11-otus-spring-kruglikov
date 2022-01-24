@@ -1,13 +1,11 @@
 package ru.otus.skruglikov.examiner.provider;
 
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.io.PrintStream;
 
-@Data
 @Component
 public class InputOutputProviderConsoleImpl implements InputOutputProvider {
 
@@ -18,5 +16,15 @@ public class InputOutputProviderConsoleImpl implements InputOutputProvider {
                                           @Value("#{ T(java.lang.System).out }") PrintStream printStream) {
         this.inputStream = inputStream;
         this.printStream = printStream;
+    }
+
+    @Override
+    public InputStream getInput() {
+        return this.inputStream;
+    }
+
+    @Override
+    public PrintStream getOutput() {
+        return this.printStream;
     }
 }

@@ -1,73 +1,118 @@
 package ru.otus.skruglikov.examiner.dao;
 
-import lombok.RequiredArgsConstructor;
+import com.opencsv.CSVReader;
+import com.opencsv.bean.*;
+import com.opencsv.exceptions.*;
+import lombok.Data;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.springframework.stereotype.Repository;
 import ru.otus.skruglikov.examiner.domain.Answer;
 import ru.otus.skruglikov.examiner.domain.Question;
 import ru.otus.skruglikov.examiner.domain.Quiz;
-import ru.otus.skruglikov.examiner.exception.ExaminerException;
+import ru.otus.skruglikov.examiner.exception.LineHasBlockMarkException;
+import ru.otus.skruglikov.examiner.exception.MismatchLineFormatException;
 import ru.otus.skruglikov.examiner.provider.DatasourceProvider;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
-@RequiredArgsConstructor
 public class QuizDaoCSVImpl implements QuizDao {
 
     private final DatasourceProvider datasourceProvider;
 
-    public List<Quiz> readAllQuizzes(final String examName) throws ExaminerException {
+    public QuizDaoCSVImpl(DatasourceProvider datasourceProvider) {
+        this.datasourceProvider = datasourceProvider;
+    }
+
+    public List<Quiz> readAllSortedQuizzes(final String examName) throws MismatchLineFormatException, IOException,
+        CsvException {
         final List<Quiz> quizzes = new ArrayList<>();
-            try(final InputStream ioStream = datasourceProvider.getInputStream()) {
-                final Scanner scanner = new Scanner(ioStream);
-                while(scanner.hasNext() && !("#"+examName).equals(scanner.nextLine()) ) { }
+        try(final CSVReader csvReader = new CSVReader(new InputStreamReader(datasourceProvider.getInputStream()))) {
+            final ColumnPositionMappingStrategy<QuizCSVMappingStrategyBean> mappingStrategy =
+                new ColumnPositionMappingStrategy<>();
+            mappingStrategy.setType(QuizCSVMappingStrategyBean.class);
+            CsvToBean<QuizCSVMappingStrategyBean> csvToBean = new CsvToBean<>();
+            csvToBean.setCsvReader(csvReader);
+            csvToBean.setMappingStrategy(mappingStrategy);
+            String[] csvLineData;
+            boolean examStartFound;
+            do {
+                csvLineData = csvReader.readNext();
+                examStartFound = csvLineData != null && csvLineData.length == 1 && ("#"+examName).equals(csvLineData[0]);
+            } while(csvLineData != null && !examStartFound);
+
+            if(examStartFound) {
                 int row = 0;
-                while(scanner.hasNext()) {
-                    String dataLine = scanner.nextLine();
-                    if(!dataLine.startsWith("#")) {
-                        quizzes.add(loadQuiz(++row, dataLine));
+                final Iterator<QuizCSVMappingStrategyBean> iterator = csvToBean.iterator();
+                while (iterator.hasNext()) {
+                    try {
+                        row++;
+                        final QuizCSVMappingStrategyBean strategyBean = iterator.next();
+                        final Question question = strategyBean.getQuestion();
+                        final Set<Answer> answerSet = strategyBean.getAnswer();
+                        if (answerSet.size() < 2) {
+                            throw new MismatchLineFormatException(
+                                String.format("the line %s should contain at least two answers", row));
+                        } else if (answerSet.stream().noneMatch(Answer::isCorrect)) {
+                            throw new MismatchLineFormatException(
+                                String.format("the line %s should contain a one RIGHT answer", row));
+                        }
+                        quizzes.add(new Quiz(question,answerSet));
+                    } catch (LineHasBlockMarkException e) {
+                        break;
                     }
                 }
-            } catch(IOException e) {
-                throw new ExaminerException(e.getMessage());
             }
-        return quizzes;
-    }
-
-    public List<Quiz> readAllSortedQuizzes(final String examName) throws ExaminerException {
-        return readAllQuizzes(examName).stream().sorted().collect(Collectors.toList());
-    }
-
-    private Quiz loadQuiz(final int row, final String csvLine) throws ExaminerException {
-        final String[] csvLineParts = csvLine.split(",");
-        return new Quiz(loadQuestion(row,csvLineParts),loadAnswers(row,csvLineParts));
-    }
-
-    private Question loadQuestion(final int row, final String[] csvLineParts) throws ExaminerException {
-        if(csvLineParts.length < 4) {
-            throw new ExaminerException(
-                String.format("the line %s should contain over %s part divided by delimiter",row, 4));
         }
-        return new Question(Integer.parseInt(csvLineParts[0]),Integer.parseInt(csvLineParts[1]),csvLineParts[2]);
+        return quizzes
+            .stream()
+            .sorted()
+            .collect(Collectors.toList());
     }
 
-    private Set<Answer> loadAnswers(final int row, final String[] csvLineParts) throws ExaminerException {
-        final Set<Answer> answerSet = new HashSet<>();
-        Arrays.stream(csvLineParts)
-            .skip(3)
-            .forEach(p -> {
-                final boolean isRight = p.endsWith("#");
-                answerSet.add(new Answer(isRight ? p.substring(0,p.length()-1) : p ,isRight));
-            });
-        if(answerSet.size() < 1) {
-            throw new ExaminerException(String.format("the line %s should contain at least two answers", row));
+    public static class QuizCSVMappingStrategyBean {
+        @CsvBindAndJoinByPosition(position = "0-2",elementType = Object.class)
+        private MultiValuedMap<Integer,String> questionFields;
+        private Question question;
+        @CsvBindAndJoinByPosition(position = "3-",converter = AnswerBindConverter.class,elementType = Answer.class)
+        private MultiValuedMap<Integer,Answer> answers;
+
+        public Question getQuestion() throws MismatchLineFormatException, LineHasBlockMarkException {
+            int ind = 0;
+            try {
+                String numOrderString = questionFields.get(ind)
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(()-> new MismatchLineFormatException("empty value field numOrder"));
+                if(numOrderString.startsWith("#")) {
+                    throw new LineHasBlockMarkException();
+                }
+                String weightString = questionFields.get(++ind)
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(()-> new MismatchLineFormatException("empty value field weight"));
+                String text = questionFields.get(++ind)
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(()->new MismatchLineFormatException("empty value field text"));
+                return new Question(Integer.parseInt(numOrderString),Integer.parseInt(weightString),text);
+            } catch (IllegalArgumentException e) {
+                throw new MismatchLineFormatException(e.getMessage());
+            }
         }
-        if(answerSet.stream().filter(Answer::isCorrect).count() != 1) {
-            throw new ExaminerException(String.format("the line %s should contain a one RIGHT answer", row));
+
+        public Set<Answer> getAnswer() {
+            return new HashSet<>(answers.values());
         }
-        return answerSet;
+    }
+
+    public static class AnswerBindConverter extends AbstractCsvConverter {
+        @Override
+        public Answer convertToRead(String s) {
+            final boolean isRight = s.endsWith("*");
+            return new Answer(isRight ? s.substring(0,s.length()-1) : s ,isRight);
+        }
     }
 }

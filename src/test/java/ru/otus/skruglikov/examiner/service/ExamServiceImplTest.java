@@ -6,8 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Import;
 import ru.otus.skruglikov.examiner.config.ExaminerConfig;
 import ru.otus.skruglikov.examiner.domain.*;
 import ru.otus.skruglikov.examiner.exception.ExaminerAssumedAnswerException;
@@ -39,6 +41,8 @@ class ExamServiceImplTest {
     private LocaleProviderAppConfigImpl localeProviderAppConfig;
     @Mock
     private QuizServiceImpl quizService;
+    @Mock
+    private LocaleServiceStreamImpl localeService;
 
     @InjectMocks
     private ExamServiceImpl examService;
@@ -65,12 +69,6 @@ class ExamServiceImplTest {
     void setUp() {
         when(examinerConfig.getScoreExamPass())
             .thenReturn(20);
-        when(messageSource.getMessage(eq("examiner.summary"),any(),any()))
-            .thenReturn("show result");
-        when(messageSource.getMessage(eq("examiner.resultFailed"),any(),any()))
-            .thenReturn("FAILED");
-        when(messageSource.getMessage(eq("examiner.resultSuccess"),any(),any()))
-            .thenReturn("SUCCESS");
     }
 
     @DisplayName("должен корректно подсчитывать и возвращать набранные верными ответами баллы")
@@ -86,7 +84,7 @@ class ExamServiceImplTest {
         when(quizService.getCorrectAnswer(any()))
             .thenReturn(rightAnswer);
         try(final OutputStream outputStream = new ByteArrayOutputStream()) {
-            when(ioProvider.getPrintStream())
+            when(ioProvider.getOutput())
                 .thenReturn(new PrintStream(outputStream));
             int examScour = examService.startExam(exam);
             assertEquals(20,examScour);
@@ -97,8 +95,10 @@ class ExamServiceImplTest {
     @Test
     void showExamSuccessResult() throws IOException {
         try(final OutputStream outputStream = new ByteArrayOutputStream()) {
-            when(ioProvider.getPrintStream())
-                .thenReturn(new PrintStream(outputStream));
+            doAnswer(inv -> { new PrintStream(outputStream).println("SUCCESS");
+                return null; })
+                .when(localeService)
+                .output(eq("examiner.resultSuccess"),any());
             final JournalEntry entry = new JournalEntry(new Student("",""), exam);
             entry.setExamScore(21);
             examService.showExamResult(entry);
@@ -110,14 +110,15 @@ class ExamServiceImplTest {
     @Test
     void showExamFailedResult() throws IOException {
         try(final OutputStream outputStream = new ByteArrayOutputStream()) {
-            when(ioProvider.getPrintStream())
-                .thenReturn(new PrintStream(outputStream));
+            doAnswer(inv -> { new PrintStream(outputStream).println("FAILED");
+                return null; })
+                .when(localeService)
+                .output(eq("examiner.resultFailed"),any());
             final JournalEntry entry = new JournalEntry(new Student("",""), exam);
             entry.setExamScore(19);
             examService.showExamResult(entry);
             assertThat(outputStream.toString()).contains("FAILED");
         }
-
     }
 
 }

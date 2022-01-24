@@ -1,33 +1,24 @@
 package ru.otus.skruglikov.examiner.service;
 
-import org.springframework.context.MessageSource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.otus.skruglikov.examiner.config.ExaminerConfig;
+import ru.otus.skruglikov.examiner.config.ExaminerScoreExamPassConfig;
 import ru.otus.skruglikov.examiner.domain.*;
 import ru.otus.skruglikov.examiner.exception.ExaminerAssumedAnswerException;
 import ru.otus.skruglikov.examiner.exception.ExaminerException;
-import ru.otus.skruglikov.examiner.provider.InputOutputProvider;
-import ru.otus.skruglikov.examiner.provider.LocaleProvider;
 
-import java.io.PrintStream;
 import java.util.Map;
 
 @Service
-public class ExamServiceImpl extends ServiceMessageAwareAbstract implements ExamService {
+@RequiredArgsConstructor
+public class ExamServiceImpl implements ExamService {
 
-    private final ExaminerConfig examinerConfig;
+    private final LocaleService localeService;
+    private final ExaminerScoreExamPassConfig examinerScoreExamPassConfig;
     private final QuizService quizService;
 
-    public ExamServiceImpl(final MessageSource messageSource, final LocaleProvider localeProvider,
-                           final InputOutputProvider ioProvider, final ExaminerConfig examinerConfig,
-                           final QuizService quizService) {
-        super(messageSource, localeProvider, ioProvider);
-        this.examinerConfig = examinerConfig;
-        this.quizService = quizService;
-    }
 
     public int startExam(final Exam exam) throws ExaminerException {
-        final PrintStream ps = ioProvider.getPrintStream();
         int examScore = 0;
         for(final Quiz quiz : exam.getQuizList()) {
             quizService.showQuestion(quiz);
@@ -38,8 +29,7 @@ public class ExamServiceImpl extends ServiceMessageAwareAbstract implements Exam
                     assumedAnswerNumber = quizService.askAnswer(answersShowMap);
                 } catch (ExaminerAssumedAnswerException e) {
                     final String variants = answersShowMap.keySet().toString();
-                    ps.println(messageSource.getMessage("examiner.incorrectAssumedAnswer",
-                        new String[]{ variants }, locale));
+                    localeService.output("examiner.incorrectAssumedAnswer",variants);
                 }
             } while(assumedAnswerNumber == null);
             final Answer assumedAnswer = answersShowMap.get(assumedAnswerNumber);
@@ -52,17 +42,15 @@ public class ExamServiceImpl extends ServiceMessageAwareAbstract implements Exam
 
     @Override
     public void showExamResult(final JournalEntry journalEntry) {
-        final PrintStream ps = ioProvider.getPrintStream();
         int examScore = journalEntry.getExamScore();
-        int passLevel = examinerConfig.getScoreExamPass();
-        ps.println(messageSource
-            .getMessage("examiner.summary",new String[] { String.valueOf(examScore) }, locale));
+        int passLevel = examinerScoreExamPassConfig.getScoreExamPass();
+        final Student student = journalEntry.getStudent();
+        final String studentInfo = String.format("%s %s",student.getLastName(),student.getFirstName());
+        localeService.output("examiner.summary",studentInfo,String.valueOf(examScore));
         if(examScore >= passLevel) {
-            ps.println(messageSource
-                .getMessage("examiner.resultSuccess",new String[] { String.valueOf(passLevel) }, locale));
+            localeService.output("examiner.resultSuccess",String.valueOf(passLevel));
         } else {
-            ps.println(messageSource.getMessage("examiner.resultFailed",
-                new String[] { String.valueOf(passLevel), String.valueOf(passLevel) }, locale));
+            localeService.output("examiner.resultFailed",String.valueOf(passLevel));
         }
     }
 }

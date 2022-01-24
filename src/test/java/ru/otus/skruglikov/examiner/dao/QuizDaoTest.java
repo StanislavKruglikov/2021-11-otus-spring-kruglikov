@@ -1,5 +1,6 @@
 package ru.otus.skruglikov.examiner.dao;
 
+import com.opencsv.exceptions.CsvException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,14 +13,18 @@ import ru.otus.skruglikov.examiner.domain.Answer;
 import ru.otus.skruglikov.examiner.domain.Question;
 import ru.otus.skruglikov.examiner.domain.Quiz;
 import ru.otus.skruglikov.examiner.exception.ExaminerException;
+import ru.otus.skruglikov.examiner.exception.MismatchLineFormatException;
 import ru.otus.skruglikov.examiner.provider.DatasourceProviderCSVImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.when;
 
 @DisplayName("Класс QuizDaoCSVImpl")
@@ -51,12 +56,12 @@ class QuizDaoTest {
 
     @DisplayName("корректно начитывает все тесты экзамена")
     @Test
-    void shouldCorrectReadAllQuizzesForExam() throws ExaminerException, IOException {
+    void shouldCorrectReadAllQuizzesForExam() throws Exception {
         try(final InputStream is = testDataResource.getInputStream()) {
             when(datasourceProvider.getInputStream())
                 .thenReturn(is);
 
-            assertThat(quizDao.readAllQuizzes(TEST_EXAM_NAME))
+            assertThat(quizDao.readAllSortedQuizzes(TEST_EXAM_NAME))
                 .hasSize(3)
                 .contains(quiz3,quiz1);
         }
@@ -64,32 +69,20 @@ class QuizDaoTest {
 
     @DisplayName("корректно начитывает пустой список для неизвестного экзамена")
     @Test
-    void shouldReadEmptyListQuizzesForUnknownExam() throws ExaminerException, IOException {
+    void shouldReadEmptyListQuizzesForUnknownExam() throws Exception {
         try(final InputStream is = testDataResource.getInputStream()) {
             when(datasourceProvider.getInputStream())
                 .thenReturn(is);
 
-            assertThat(quizDao.readAllQuizzes(TEST_EXAM_NAME+" any other"))
+            assertThat(quizDao.readAllSortedQuizzes(TEST_EXAM_NAME+" any other"))
                 .hasSize(0);
         }
     }
 
-    @DisplayName("возвращает весь список тестов экзамена")
-    @Test
-    void shouldReadAllQuizzes() throws ExaminerException, IOException {
-        try(final InputStream is = testDataResource.getInputStream()){
-            when(datasourceProvider.getInputStream())
-                    .thenReturn(is);
 
-            assertThat(quizDao.readAllQuizzes(TEST_EXAM_NAME))
-                    .hasSize(3)
-                    .containsExactlyInAnyOrder(quiz1,quiz3,quiz2);
-        }
-    }
-
-    @DisplayName("корректная сортировка в списке тестов экзамена")
+    @DisplayName("возвращает упорядоченный список все тестов экзамена")
     @Test
-    void shouldCorrectOrderReadAllQuizzes() throws ExaminerException, IOException {
+    void shouldCorrectOrderReadAllQuizzes() throws Exception {
         try(final InputStream is = testDataResource.getInputStream()){
             when(datasourceProvider.getInputStream())
                 .thenReturn(is);
@@ -97,6 +90,20 @@ class QuizDaoTest {
             assertThat(quizDao.readAllSortedQuizzes(TEST_EXAM_NAME))
                 .hasSize(3)
                 .containsSubsequence(quiz1,quiz3);
+        }
+    }
+
+    @DisplayName("выбрасывает исключение при не корректном формате строки теста")
+    @Test
+    void shouldCorrectThrowExceptionOnMismatchFormatLine() throws Exception {
+        try(final InputStream is = testDataResource.getInputStream()){
+            when(datasourceProvider.getInputStream())
+                .thenReturn(is);
+
+            assertThatExceptionOfType(MismatchLineFormatException.class).isThrownBy(()-> {
+                quizDao.readAllSortedQuizzes("Test exam name wrong format line");
+            });
+
         }
     }
 }

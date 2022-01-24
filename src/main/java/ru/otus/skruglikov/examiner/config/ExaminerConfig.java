@@ -9,7 +9,7 @@ import java.util.Locale;
 @ConfigurationProperties(prefix = "examiner")
 @Component
 @Data
-public class ExaminerConfig {
+public class ExaminerConfig implements ExaminerDataPathConfig, ExaminerScoreExamPassConfig {
     private int scoreExamPass;
     private Locale locale;
     private String examDataPath;
@@ -18,6 +18,7 @@ public class ExaminerConfig {
         locale = Locale.forLanguageTag(languageTag);
     }
 
+    @Override
     public String getExamDataPath() {
         final StringBuilder stringBuilder = new StringBuilder(this.examDataPath);
         if(locale != null) {

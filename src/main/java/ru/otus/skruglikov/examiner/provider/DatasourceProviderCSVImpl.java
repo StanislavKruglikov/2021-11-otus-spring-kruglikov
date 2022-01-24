@@ -1,9 +1,8 @@
 package ru.otus.skruglikov.examiner.provider;
 
-import lombok.Getter;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.stereotype.Component;
-import ru.otus.skruglikov.examiner.config.ExaminerConfig;
+import ru.otus.skruglikov.examiner.config.ExaminerDataPathConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,10 +10,9 @@ import java.io.InputStream;
 @Component
 public class DatasourceProviderCSVImpl implements DatasourceProvider {
 
-    @Getter
     private final String resourcePath;
 
-    public DatasourceProviderCSVImpl(final ExaminerConfig config) {
+    public DatasourceProviderCSVImpl(final ExaminerDataPathConfig config) {
         this.resourcePath = "classpath:"+config.getExamDataPath() + ".csv";
     }
 

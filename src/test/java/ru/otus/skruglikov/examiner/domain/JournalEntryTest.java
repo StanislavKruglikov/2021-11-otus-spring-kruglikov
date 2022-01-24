@@ -27,8 +27,11 @@ class JournalEntryTest {
     @DisplayName("корректно сравниваются на равенство")
     @Test
     void shouldHaveCorrectEquals() {
-        assertEquals(new JournalEntry(student, exam),
-                new JournalEntry(student, exam));
+        final JournalEntry actual = new JournalEntry(student, exam);
+        actual.setExamScore(101);
+        final JournalEntry expected = new JournalEntry(student, exam);
+        expected.setExamScore(101);
+        assertEquals(expected,actual);
 
     }
 
@@ -36,11 +39,19 @@ class JournalEntryTest {
     @Test
     void shouldHaveCorrectNotEquals() {
         final JournalEntry journalEntry = new JournalEntry(student, exam);
+        journalEntry.setExamScore(101);
         final Student student2 = new Student(student.getFirstName()+"!",student.getLastName());
         final Exam exam2 = new Exam(exam.getName()+"!",exam.getQuizList());
+        final JournalEntry journalEntryActual1 = new JournalEntry(student2, exam);
+        journalEntryActual1.setExamScore(101);
+        final JournalEntry journalEntryActual2 = new JournalEntry(student, exam2);
+        journalEntryActual2.setExamScore(101);
+        final JournalEntry journalEntryActual3 = new JournalEntry(student, exam);
+        journalEntryActual3.setExamScore(99);
         assertAll("answerNotEquals",
-            () -> assertNotEquals(journalEntry, new JournalEntry(student2, exam)),
-            () -> assertNotEquals(journalEntry, new JournalEntry(student, exam2))
+            () -> assertNotEquals(journalEntry, journalEntryActual1),
+            () -> assertNotEquals(journalEntry, journalEntryActual2),
+            () -> assertNotEquals(journalEntry, journalEntryActual3)
         );
 
     }

@@ -25,14 +25,10 @@ class DatasourceProviderCSVImplTest {
     @DisplayName("корректно сздается конструктором")
     @Test
     void shouldCorrectCreateByConstructor() throws IOException {
-        try (InputStream inputStreamExpected = new DefaultResourceLoader()
-                .getResource(testResourceDataPath)
-                .getInputStream()) {
-            assertAll("datasourceProviderCSVTest",
-                    () -> assertEquals(testResourceDataPath, datasourceProviderCSVImpl.getResourcePath()),
-                    () -> assertArrayEquals(inputStreamExpected.readAllBytes(),
-                            datasourceProviderCSVImpl.getInputStream().readAllBytes())
-            );
+        try (final InputStream inputStreamExpected = new DefaultResourceLoader().getResource(testResourceDataPath)
+            .getInputStream();
+             final InputStream inputStreamActual = datasourceProviderCSVImpl.getInputStream()) {
+            assertArrayEquals(inputStreamExpected.readAllBytes(),inputStreamActual.readAllBytes());
         }
     }
 }
