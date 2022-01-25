@@ -3,7 +3,7 @@ package ru.otus.skruglikov.examiner.service;
 import ru.otus.skruglikov.examiner.domain.Answer;
 import ru.otus.skruglikov.examiner.domain.Quiz;
 import ru.otus.skruglikov.examiner.exception.ExaminerAssumedAnswerException;
-import ru.otus.skruglikov.examiner.exception.ExaminerException;
+import ru.otus.skruglikov.examiner.exception.ExaminerRightAnswerAbsentException;
 
 import java.util.Map;
 
@@ -14,7 +14,7 @@ public interface QuizService {
 
     Map<Integer,Answer> showAnswers(Quiz quiz);
 
-    Answer getCorrectAnswer(Quiz quiz)  throws ExaminerException;
+    Answer getCorrectAnswer(Quiz quiz) throws ExaminerRightAnswerAbsentException;
 
-    Integer askAnswer(final Map<Integer,Answer> answersShowMap) throws ExaminerAssumedAnswerException;
+    int askAnswer(final Map<Integer,Answer> answersShowMap) throws ExaminerAssumedAnswerException;
 }

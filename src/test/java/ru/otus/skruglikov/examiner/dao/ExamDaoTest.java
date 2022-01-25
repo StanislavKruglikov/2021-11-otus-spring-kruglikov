@@ -1,6 +1,5 @@
 package ru.otus.skruglikov.examiner.dao;
 
-import com.opencsv.exceptions.CsvException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,9 +11,7 @@ import ru.otus.skruglikov.examiner.domain.Exam;
 import ru.otus.skruglikov.examiner.domain.Question;
 import ru.otus.skruglikov.examiner.domain.Quiz;
 import ru.otus.skruglikov.examiner.exception.EmptyResultException;
-import ru.otus.skruglikov.examiner.exception.ExaminerException;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -56,7 +53,7 @@ class ExamDaoTest {
 
     @DisplayName("выбрасывает исключение для пустого списка вопросов по экзамену")
     @Test
-    void shouldThrowExceptionOnEmptyListQuestion() throws Exception {
+    void shouldThrowExceptionOnEmptyListQuestion() {
         List<Quiz> quizList = List.of(lastQuiz);
         when(quizDao.readAllSortedQuizzes(""))
             .thenReturn(quizList);

@@ -12,8 +12,8 @@ class ExaminerConfigTest {
     @Test
     void shouldCorrectSet() {
         final ExaminerConfig examinerConfigTest = new ExaminerConfig();
-        examinerConfigTest.setScoreExamPass(100);
-        assertEquals(100, examinerConfigTest.getScoreExamPass());
+        examinerConfigTest.setExamScorePass(100);
+        assertEquals(100, examinerConfigTest.getExamScorePass());
     }
 
     @DisplayName("должен корректно формировать путь к файлу данных с заданной локалью")
@@ -22,7 +22,7 @@ class ExaminerConfigTest {
         final ExaminerConfig examinerConfigTest = new ExaminerConfig();
         examinerConfigTest.setLocale("ca-ES");
         examinerConfigTest.setExamDataPath("data/exam");
-        assertEquals("data/exam_ca_ES",examinerConfigTest.getExamDataPath());
+        assertEquals("data/exam_ca_ES",examinerConfigTest.getDataPath());
     }
 
     @DisplayName("должен корректно формировать путь к файлу данных c незаданной локалью")
@@ -30,6 +30,6 @@ class ExaminerConfigTest {
     void shouldCreateQuizFilePathByNoneLocaleAndType() {
         final ExaminerConfig examinerConfigTest = new ExaminerConfig();
         examinerConfigTest.setExamDataPath("data/exam");
-        assertEquals("data/exam",examinerConfigTest.getExamDataPath());
+        assertEquals("data/exam",examinerConfigTest.getDataPath());
     }
 }

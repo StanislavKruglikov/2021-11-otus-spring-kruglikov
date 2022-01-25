@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 
 @Component
-public class InputOutputProviderConsoleImpl implements InputOutputProvider {
+public class InputOutputProviderConsoleImpl implements InputOutputProvider<InputStream,PrintStream> {
 
     private final InputStream inputStream;
     private final PrintStream printStream;

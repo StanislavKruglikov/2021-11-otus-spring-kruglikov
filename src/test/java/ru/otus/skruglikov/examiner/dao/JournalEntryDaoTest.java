@@ -24,7 +24,7 @@ class JournalEntryDaoTest {
     @Test
     void shouldCorrectCreateJournalEntity() {
         final Student studentPattern = new Student("TestFirst","TestLast");
-        final Exam examPattern = new Exam("test",Collections.EMPTY_LIST);
+        final Exam examPattern = new Exam("test",Collections.emptyList());
         final JournalEntry journalEntryActual =  journalEntryDao.create(studentPattern,
                 examPattern);
             assertAll("testJournalEntry",
@@ -38,7 +38,7 @@ class JournalEntryDaoTest {
     @Test
     void shouldCorrectSetScoreJournalEntity() {
         final Student studentPattern = new Student("TestFirst","TestLast");
-        final Exam examPattern = new Exam("test",Collections.EMPTY_LIST);
+        final Exam examPattern = new Exam("test",Collections.emptyList());
         final JournalEntry journalEntryActual =  journalEntryDao.create(studentPattern,
                 examPattern);
         journalEntryActual.setExamScore(33);
@@ -50,11 +50,11 @@ class JournalEntryDaoTest {
     void shouldCorrectAddJournalEntity() {
         final int scorePattern = 33;
         final Student studentPattern = new Student("TestFirst","TestLast");
-        final Exam examPattern = new Exam("test",Collections.EMPTY_LIST);
+        final Exam examPattern = new Exam("test",Collections.emptyList());
         final JournalEntry journalEntryPattern = journalEntryDao.create(studentPattern,examPattern);
         journalEntryDao.addEntry(journalEntryPattern);
         final Student studentPattern2 = new Student("TestFirst","TestLast");
-        final Exam examPattern2 = new Exam("test",Collections.EMPTY_LIST);
+        final Exam examPattern2 = new Exam("test",Collections.emptyList());
         final JournalEntry journalEntryPattern2 = journalEntryDao.create(studentPattern2,examPattern2);
         journalEntryDao.addEntry(journalEntryPattern2);
         Assertions.assertThat(journalEntryDao.readAll())

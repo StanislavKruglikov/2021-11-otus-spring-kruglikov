@@ -11,7 +11,7 @@
     </parent>
     <groupId>ru.otus.kruglikov</groupId>
     <artifactId>examiner</artifactId>
-    <version>3.0</version>
+    <version>3.2</version>
     <name>examiner</name>
     <description>The application for students take exams</description>
 

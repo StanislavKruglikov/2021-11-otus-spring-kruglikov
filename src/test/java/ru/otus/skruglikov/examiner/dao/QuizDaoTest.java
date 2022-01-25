@@ -1,6 +1,5 @@
 package ru.otus.skruglikov.examiner.dao;
 
-import com.opencsv.exceptions.CsvException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,14 +11,10 @@ import org.springframework.core.io.Resource;
 import ru.otus.skruglikov.examiner.domain.Answer;
 import ru.otus.skruglikov.examiner.domain.Question;
 import ru.otus.skruglikov.examiner.domain.Quiz;
-import ru.otus.skruglikov.examiner.exception.ExaminerException;
 import ru.otus.skruglikov.examiner.exception.MismatchLineFormatException;
-import ru.otus.skruglikov.examiner.provider.DatasourceProviderCSVImpl;
+import ru.otus.skruglikov.examiner.provider.DatasourceProviderResourceCSVImpl;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,22 +28,21 @@ class QuizDaoTest {
     private static final String TEST_EXAM_NAME = "Test exam name";
 
     @Mock
-    private DatasourceProviderCSVImpl datasourceProvider;
+    private DatasourceProviderResourceCSVImpl datasourceProvider;
     @InjectMocks
     private QuizDaoCSVImpl quizDao;
     @Value("classpath:testdata.csv")
     private Resource testDataResource;
 
     private Quiz quiz1;
-    private Quiz quiz2;
     private Quiz quiz3;
 
     @BeforeEach
     void setUp() {
         quiz1 = new Quiz(new Question(1,10,"TEST_QUESTION_A"),
             Set.of(new Answer("ANSWER_A_1",false),new Answer("ANSWER_A_2",true)));
-        quiz2 = new Quiz(new Question(2,20,"TEST_QUESTION_C"),
-                Set.of(new Answer("ANSWER_C_1",true),new Answer("ANSWER_C_2",false)));
+        Quiz quiz2 = new Quiz(new Question(2, 20, "TEST_QUESTION_C"),
+            Set.of(new Answer("ANSWER_C_1", true), new Answer("ANSWER_C_2", false)));
         quiz3 = new Quiz(new Question(3,10,"TEST_QUESTION_B"),
             Set.of(new Answer("ANSWER_B_1",false),new Answer("ANSWER_B_2",false)
                 ,new Answer("ANSWER_B_3",true),new Answer("ANSWER_B_4",false)));
@@ -100,10 +94,9 @@ class QuizDaoTest {
             when(datasourceProvider.getInputStream())
                 .thenReturn(is);
 
-            assertThatExceptionOfType(MismatchLineFormatException.class).isThrownBy(()-> {
-                quizDao.readAllSortedQuizzes("Test exam name wrong format line");
-            });
-
+            assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(()-> quizDao.readAllSortedQuizzes("Test exam name wrong format line"))
+                .withMessage("the line 1 should contain a one RIGHT answer only");
         }
     }
 }

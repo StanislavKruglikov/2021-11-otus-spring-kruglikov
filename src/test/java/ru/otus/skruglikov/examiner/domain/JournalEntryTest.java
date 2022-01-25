@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Класс JournalEntry")
 class JournalEntryTest {
-    private final Exam exam = new Exam("", Collections.EMPTY_LIST);
+    private final Exam exam = new Exam("", Collections.emptyList());
     private final Student student = new Student("", "");
 
     @DisplayName("корректно создается конструктором")

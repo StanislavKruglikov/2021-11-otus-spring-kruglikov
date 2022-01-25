@@ -20,14 +20,14 @@ class DatasourceProviderCSVImplTest {
     private String testResourceDataPath;
 
     @Autowired
-    private DatasourceProviderCSVImpl datasourceProviderCSVImpl;
+    private DatasourceProviderResourceCSVImpl datasourceProviderResourceCSVImpl;
 
     @DisplayName("корректно сздается конструктором")
     @Test
     void shouldCorrectCreateByConstructor() throws IOException {
         try (final InputStream inputStreamExpected = new DefaultResourceLoader().getResource(testResourceDataPath)
             .getInputStream();
-             final InputStream inputStreamActual = datasourceProviderCSVImpl.getInputStream()) {
+             final InputStream inputStreamActual = datasourceProviderResourceCSVImpl.getInputStream()) {
             assertArrayEquals(inputStreamExpected.readAllBytes(),inputStreamActual.readAllBytes());
         }
     }
