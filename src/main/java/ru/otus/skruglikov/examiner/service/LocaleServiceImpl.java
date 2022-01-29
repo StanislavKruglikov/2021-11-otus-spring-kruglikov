@@ -12,7 +12,7 @@ public class LocaleServiceImpl implements LocaleService {
     private final MessageSource messageSource;
     private final LocaleProvider localeProvider;
 
-    public String getMessage(final String message,final String... arguments) {
+    public String getMessage(final String message, final String... arguments) {
         return messageSource.getMessage(message,arguments, localeProvider.getLocale());
     }
 

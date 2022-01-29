@@ -2,9 +2,10 @@ package ru.otus.skruglikov.examiner.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import ru.otus.skruglikov.examiner.provider.LocaleProviderAppConfigImpl;
 
@@ -15,7 +16,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @DisplayName("класс LocaleServiceImpl")
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class LocaleServiceImplTest {
 
     @Mock

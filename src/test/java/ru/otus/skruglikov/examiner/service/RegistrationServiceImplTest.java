@@ -2,9 +2,9 @@ package ru.otus.skruglikov.examiner.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.otus.skruglikov.examiner.dao.StudentDaoImpl;
 import ru.otus.skruglikov.examiner.domain.Student;
 import ru.otus.skruglikov.examiner.exception.RegistrationException;
@@ -21,12 +21,12 @@ class RegistrationServiceImplTest {
     public static final String FIRST_NAME = "TestFirstName";
     public static final String LAST_NAME = "TestLastName";
 
-    @Mock
+    @MockBean
     private StudentDaoImpl studentDao;
-    @Mock
+    @MockBean
     private LocaleIOServiceImpl localeIOService;
 
-    @InjectMocks
+    @Autowired
     private RegistrationServiceImpl registrationService;
 
     @DisplayName("в результате регистрации корректно сздается объект Student")

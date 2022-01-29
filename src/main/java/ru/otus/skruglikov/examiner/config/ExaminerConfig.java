@@ -20,12 +20,6 @@ public class ExaminerConfig implements DataPathConfig, ExamScorePassConfig, Loca
 
     @Override
     public String getDataPath() {
-        final StringBuilder stringBuilder = new StringBuilder(this.examDataPath);
-        if(locale != null) {
-            stringBuilder
-                .append("_")
-                .append(locale.toLanguageTag().replace("-","_"));
-        }
-        return stringBuilder.toString();
+        return this.examDataPath;
     }
 }

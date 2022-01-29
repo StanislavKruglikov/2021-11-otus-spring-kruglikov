@@ -3,9 +3,9 @@ package ru.otus.skruglikov.examiner.service;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.otus.skruglikov.examiner.domain.Answer;
 import ru.otus.skruglikov.examiner.domain.Question;
 import ru.otus.skruglikov.examiner.domain.Quiz;
@@ -18,16 +18,15 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @DisplayName("класс QuizServiceImpl")
 @SpringBootTest
 class QuizServiceImplTest {
 
-    @Mock
+    @MockBean
     private LocaleIOServiceImpl localeIOService;
-    @InjectMocks
+    @Autowired
     private QuizServiceImpl quizService;
 
     private static Answer rightAnswer;
@@ -81,7 +80,7 @@ class QuizServiceImplTest {
     void shouldCorrectReturnMapAnswers() throws IOException {
         try(final OutputStream os = new ByteArrayOutputStream()) {
             doAnswer(invocation -> {
-                new PrintStream(os).println(invocation.<String>getArgument(0).getBytes(StandardCharsets.UTF_8));
+                new PrintStream(os).println(invocation.<String>getArgument(0));
                 return null;
             })
                 .when(localeIOService)
@@ -115,7 +114,7 @@ class QuizServiceImplTest {
             when(localeIOService.read())
                 .thenReturn("1");
             doAnswer(invocation -> {
-                new PrintStream(os).println(invocation.<String>getArgument(0).getBytes(StandardCharsets.UTF_8));
+                new PrintStream(os).println(invocation.<String>getArgument(0));
                 return null;
             })
                 .when(localeIOService)

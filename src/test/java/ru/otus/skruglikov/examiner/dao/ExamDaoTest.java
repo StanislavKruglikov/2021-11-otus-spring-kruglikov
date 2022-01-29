@@ -3,9 +3,9 @@ package ru.otus.skruglikov.examiner.dao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.otus.skruglikov.examiner.domain.Answer;
 import ru.otus.skruglikov.examiner.domain.Exam;
 import ru.otus.skruglikov.examiner.domain.Question;
@@ -25,9 +25,10 @@ import static org.mockito.Mockito.when;
 class ExamDaoTest {
     private static final String TEST_EXAM_NAME = "Test exam name";
 
-    @Mock
+    @MockBean
     private QuizDao quizDao;
-    @InjectMocks
+
+    @Autowired
     private ExamDaoDefaultImpl examDao;
     private Quiz lastQuiz;
 

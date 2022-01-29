@@ -2,9 +2,9 @@ package ru.otus.skruglikov.examiner.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doAnswer;
@@ -14,12 +14,12 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 class LocaleIOServiceImplTest {
 
-    @Mock
+    @MockBean
     private IOServiceImpl ioService;
-    @Mock
+    @MockBean
     private LocaleServiceImpl localeService;
 
-    @InjectMocks
+    @Autowired
     private LocaleIOServiceImpl localeIOService;
 
     private final String testData = "TEST DATA";

@@ -10,6 +10,7 @@ import ru.otus.skruglikov.examiner.domain.Question;
 import ru.otus.skruglikov.examiner.domain.Quiz;
 import ru.otus.skruglikov.examiner.exception.LineHasBlockMarkException;
 import ru.otus.skruglikov.examiner.exception.MismatchLineFormatException;
+import ru.otus.skruglikov.examiner.exception.QuizReadingDaoException;
 import ru.otus.skruglikov.examiner.provider.DatasourceProvider;
 
 import java.io.*;
@@ -45,11 +46,11 @@ public class QuizDaoCSVImpl implements QuizDao {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("error at reading from datasource",e);
+            throw new QuizReadingDaoException("error at reading from datasource",e);
         } catch (CsvValidationException e) {
-            throw new RuntimeException("error at validation csv data",e);
+            throw new QuizReadingDaoException("error at validation csv data",e);
         } catch (MismatchLineFormatException e) {
-            throw new RuntimeException(e.getMessage(),e);
+            throw new QuizReadingDaoException(e.getMessage(),e);
         }
         return quizzes
             .stream()

@@ -45,7 +45,12 @@ public class QuizServiceImpl implements QuizService {
     public int askAnswer(final Map<Integer,Answer> answersShowMap) throws ExaminerAssumedAnswerException {
         localeIOService.writeMessage("examiner.askAnswer");
         final String answer = localeIOService.read();
-        final int inputNumber = Integer.valueOf(answer);
+        final int inputNumber;
+        try {
+            inputNumber = Integer.parseInt(answer);
+        } catch (NumberFormatException e) {
+            throw new ExaminerAssumedAnswerException();
+        }
         if(!answersShowMap.containsKey(inputNumber)) {
             throw new ExaminerAssumedAnswerException();
         }

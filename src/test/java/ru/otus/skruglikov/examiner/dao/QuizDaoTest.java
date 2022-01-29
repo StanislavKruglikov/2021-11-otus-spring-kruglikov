@@ -3,15 +3,14 @@ package ru.otus.skruglikov.examiner.dao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
 import ru.otus.skruglikov.examiner.domain.Answer;
 import ru.otus.skruglikov.examiner.domain.Question;
 import ru.otus.skruglikov.examiner.domain.Quiz;
-import ru.otus.skruglikov.examiner.exception.MismatchLineFormatException;
 import ru.otus.skruglikov.examiner.provider.DatasourceProviderResourceCSVImpl;
 
 import java.io.InputStream;
@@ -27,10 +26,12 @@ import static org.mockito.Mockito.when;
 class QuizDaoTest {
     private static final String TEST_EXAM_NAME = "Test exam name";
 
-    @Mock
+    @MockBean
     private DatasourceProviderResourceCSVImpl datasourceProvider;
-    @InjectMocks
+
+    @Autowired
     private QuizDaoCSVImpl quizDao;
+
     @Value("classpath:testdata.csv")
     private Resource testDataResource;
 

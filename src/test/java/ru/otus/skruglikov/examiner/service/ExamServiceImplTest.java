@@ -4,9 +4,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.otus.skruglikov.examiner.config.ExaminerConfig;
 import ru.otus.skruglikov.examiner.domain.*;
 import ru.otus.skruglikov.examiner.exception.ExaminerAssumedAnswerException;
@@ -26,14 +26,14 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class ExamServiceImplTest {
 
-    @Mock
+    @MockBean
     private ExaminerConfig examinerConfig;
-    @Mock
+    @MockBean
     private LocaleIOServiceImpl localeIOService;
-    @Mock
+    @MockBean
     private QuizServiceImpl quizService;
 
-    @InjectMocks
+    @Autowired
     private ExamServiceImpl examService;
 
     private static Answer rightAnswer;
