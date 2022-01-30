@@ -2,10 +2,10 @@ package ru.otus.skruglikov.examiner.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.otus.skruglikov.examiner.config.ExaminerScoreExamPassConfig;
+import ru.otus.skruglikov.examiner.config.ExamScorePassConfig;
 import ru.otus.skruglikov.examiner.domain.*;
 import ru.otus.skruglikov.examiner.exception.ExaminerAssumedAnswerException;
-import ru.otus.skruglikov.examiner.exception.ExaminerException;
+import ru.otus.skruglikov.examiner.exception.ExaminerRightAnswerAbsentException;
 
 import java.util.Map;
 
@@ -13,12 +13,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ExamServiceImpl implements ExamService {
 
-    private final LocaleService localeService;
-    private final ExaminerScoreExamPassConfig examinerScoreExamPassConfig;
+    private final LocaleIOService localeIOService;
+    private final ExamScorePassConfig examScorePassConfig;
     private final QuizService quizService;
 
 
-    public int startExam(final Exam exam) throws ExaminerException {
+    public int startExam(final Exam exam) {
         int examScore = 0;
         for(final Quiz quiz : exam.getQuizList()) {
             quizService.showQuestion(quiz);
@@ -29,12 +29,16 @@ public class ExamServiceImpl implements ExamService {
                     assumedAnswerNumber = quizService.askAnswer(answersShowMap);
                 } catch (ExaminerAssumedAnswerException e) {
                     final String variants = answersShowMap.keySet().toString();
-                    localeService.output("examiner.incorrectAssumedAnswer",variants);
+                    localeIOService.writeMessage("examiner.incorrectAssumedAnswer",variants);
                 }
             } while(assumedAnswerNumber == null);
             final Answer assumedAnswer = answersShowMap.get(assumedAnswerNumber);
-            if (assumedAnswer.equals(quizService.getCorrectAnswer(quiz))) {
-                examScore += quiz.getQuestion().getWeight();
+            try {
+                if (assumedAnswer.equals(quizService.getCorrectAnswer(quiz))) {
+                    examScore += quiz.getQuestion().getWeight();
+                }
+            } catch (ExaminerRightAnswerAbsentException e) {
+              throw new RuntimeException("quiz has no right answer",e);
             }
         }
         return examScore;
@@ -43,14 +47,14 @@ public class ExamServiceImpl implements ExamService {
     @Override
     public void showExamResult(final JournalEntry journalEntry) {
         int examScore = journalEntry.getExamScore();
-        int passLevel = examinerScoreExamPassConfig.getScoreExamPass();
+        int passLevel = examScorePassConfig.getExamScorePass();
         final Student student = journalEntry.getStudent();
         final String studentInfo = String.format("%s %s",student.getLastName(),student.getFirstName());
-        localeService.output("examiner.summary",studentInfo,String.valueOf(examScore));
+        localeIOService.writeMessage("examiner.summary",studentInfo,String.valueOf(examScore));
         if(examScore >= passLevel) {
-            localeService.output("examiner.resultSuccess",String.valueOf(passLevel));
+            localeIOService.writeMessage("examiner.resultSuccess",String.valueOf(passLevel));
         } else {
-            localeService.output("examiner.resultFailed",String.valueOf(passLevel));
+            localeIOService.writeMessage("examiner.resultFailed",String.valueOf(passLevel));
         }
     }
 }

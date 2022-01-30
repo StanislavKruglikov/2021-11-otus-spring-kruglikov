@@ -1,30 +1,23 @@
 package ru.otus.skruglikov.examiner.service;
 
-import com.opencsv.exceptions.CsvException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
 import ru.otus.skruglikov.examiner.config.ExaminerConfig;
 import ru.otus.skruglikov.examiner.dao.ExamDaoDefaultImpl;
-import ru.otus.skruglikov.examiner.dao.JournalEntryDaoMemoryImpl;
+import ru.otus.skruglikov.examiner.dao.JournalEntryDaoImpl;
 import ru.otus.skruglikov.examiner.domain.Exam;
 import ru.otus.skruglikov.examiner.domain.JournalEntry;
 import ru.otus.skruglikov.examiner.domain.Student;
-import ru.otus.skruglikov.examiner.exception.EmptyResultException;
-import ru.otus.skruglikov.examiner.exception.ExaminerException;
 
-import java.io.*;
 import java.util.Collections;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @DisplayName("Класс ExaminerServiceImpl")
@@ -34,18 +27,18 @@ class ExaminerServiceTest {
     @Value("classpath:testdata.csv")
     private Resource testDataResource;
 
-    @Mock
+    @MockBean
     private ExaminerConfig examinerConfig;
-    @Mock
+    @MockBean
     private RegistrationServiceImpl registrationService;
-    @Mock
+    @MockBean
     private ExamDaoDefaultImpl examDao;
-    @Mock
-    private JournalEntryDaoMemoryImpl journalEntryDao;
-    @Mock
+    @MockBean
+    private JournalEntryDaoImpl journalEntryDao;
+    @MockBean
     private ExamServiceImpl examService;
 
-    @InjectMocks
+    @Autowired
     private ExaminerServiceImpl examinerService;
 
     private static Student student;
@@ -54,14 +47,12 @@ class ExaminerServiceTest {
     @BeforeAll
     static void beforeAll() {
         student = new Student("FirstName","LastName");
-        exam = new Exam("Exam Name", Collections.EMPTY_LIST);
+        exam = new Exam("Exam Name", Collections.emptyList());
     }
 
     @DisplayName("метод должен регестировать студента и запускать экзамен")
     @Test
     void takeExam() throws Exception {
-        try(final OutputStream outputStream = new ByteArrayOutputStream();
-            final InputStream is = testDataResource.getInputStream()) {
             final JournalEntry journalEntryExpected = new JournalEntry(student,exam);
             when(registrationService.register())
                 .thenReturn(student);
@@ -74,13 +65,11 @@ class ExaminerServiceTest {
             doCallRealMethod()
                 .when(journalEntryDao)
                 .setExamScore(any(JournalEntry.class),eq(101));
-            doAnswer(invoc -> {
-                assertEquals(journalEntryExpected,invoc.getArgument(0));
+            doAnswer(invocation -> {
+                assertEquals(journalEntryExpected,invocation.getArgument(0));
                 return null;
             }).when(examService)
                 .showExamResult(any());
             examinerService.takeExam(exam.getName());
-        }
     }
-
 }

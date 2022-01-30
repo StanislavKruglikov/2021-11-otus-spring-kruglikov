@@ -4,18 +4,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.otus.skruglikov.examiner.config.ExaminerConfig;
 import ru.otus.skruglikov.examiner.domain.*;
 import ru.otus.skruglikov.examiner.exception.ExaminerAssumedAnswerException;
-import ru.otus.skruglikov.examiner.exception.ExaminerException;
-import ru.otus.skruglikov.examiner.provider.InputOutputProviderConsoleImpl;
-import ru.otus.skruglikov.examiner.provider.LocaleProviderAppConfigImpl;
+import ru.otus.skruglikov.examiner.exception.ExaminerRightAnswerAbsentException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,20 +26,14 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class ExamServiceImplTest {
 
-    @Mock
+    @MockBean
     private ExaminerConfig examinerConfig;
-    @Mock
-    private MessageSource messageSource;
-    @Mock
-    private InputOutputProviderConsoleImpl ioProvider;
-    @Mock
-    private LocaleProviderAppConfigImpl localeProviderAppConfig;
-    @Mock
+    @MockBean
+    private LocaleIOServiceImpl localeIOService;
+    @MockBean
     private QuizServiceImpl quizService;
-    @Mock
-    private LocaleServiceStreamImpl localeService;
 
-    @InjectMocks
+    @Autowired
     private ExamServiceImpl examService;
 
     private static Answer rightAnswer;
@@ -67,13 +56,14 @@ class ExamServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        when(examinerConfig.getScoreExamPass())
+        when(examinerConfig.getExamScorePass())
             .thenReturn(20);
     }
 
     @DisplayName("должен корректно подсчитывать и возвращать набранные верными ответами баллы")
     @Test
-    void shouldCorrectAccountAndReturnExamScore() throws ExaminerAssumedAnswerException, ExaminerException, IOException {
+    void shouldCorrectAccountAndReturnExamScore()
+        throws ExaminerAssumedAnswerException, ExaminerRightAnswerAbsentException {
         doNothing()
             .when(quizService)
             .showQuestion(any());
@@ -83,12 +73,11 @@ class ExamServiceImplTest {
             .thenReturn(1);
         when(quizService.getCorrectAnswer(any()))
             .thenReturn(rightAnswer);
-        try(final OutputStream outputStream = new ByteArrayOutputStream()) {
-            when(ioProvider.getOutput())
-                .thenReturn(new PrintStream(outputStream));
-            int examScour = examService.startExam(exam);
-            assertEquals(20,examScour);
-        }
+        doNothing()
+            .when(localeIOService)
+            .writeMessage(any(),any());
+        int examScour = examService.startExam(exam);
+        assertEquals(20,examScour);
     }
 
     @DisplayName("должен отображать сообщение об успешном прохождении экзамена")
@@ -97,8 +86,8 @@ class ExamServiceImplTest {
         try(final OutputStream outputStream = new ByteArrayOutputStream()) {
             doAnswer(inv -> { new PrintStream(outputStream).println("SUCCESS");
                 return null; })
-                .when(localeService)
-                .output(eq("examiner.resultSuccess"),any());
+                .when(localeIOService)
+                .writeMessage(eq("examiner.resultSuccess"),any());
             final JournalEntry entry = new JournalEntry(new Student("",""), exam);
             entry.setExamScore(21);
             examService.showExamResult(entry);
@@ -112,8 +101,8 @@ class ExamServiceImplTest {
         try(final OutputStream outputStream = new ByteArrayOutputStream()) {
             doAnswer(inv -> { new PrintStream(outputStream).println("FAILED");
                 return null; })
-                .when(localeService)
-                .output(eq("examiner.resultFailed"),any());
+                .when(localeIOService)
+                .writeMessage(eq("examiner.resultFailed"),any());
             final JournalEntry entry = new JournalEntry(new Student("",""), exam);
             entry.setExamScore(19);
             examService.showExamResult(entry);

@@ -1,6 +1,5 @@
 package ru.otus.skruglikov.examiner.dao;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class JournalEntryDaoTest {
 
     @Autowired
-    private JournalEntryDaoMemoryImpl journalEntryDao;
+    private JournalEntryDaoImpl journalEntryDao;
 
     @DisplayName("корректно создает запись в журнале")
     @Test
     void shouldCorrectCreateJournalEntity() {
         final Student studentPattern = new Student("TestFirst","TestLast");
-        final Exam examPattern = new Exam("test",Collections.EMPTY_LIST);
+        final Exam examPattern = new Exam("test",Collections.emptyList());
         final JournalEntry journalEntryActual =  journalEntryDao.create(studentPattern,
                 examPattern);
             assertAll("testJournalEntry",
@@ -38,27 +37,10 @@ class JournalEntryDaoTest {
     @Test
     void shouldCorrectSetScoreJournalEntity() {
         final Student studentPattern = new Student("TestFirst","TestLast");
-        final Exam examPattern = new Exam("test",Collections.EMPTY_LIST);
+        final Exam examPattern = new Exam("test",Collections.emptyList());
         final JournalEntry journalEntryActual =  journalEntryDao.create(studentPattern,
                 examPattern);
         journalEntryActual.setExamScore(33);
         assertEquals(33,journalEntryActual.getExamScore());
-    }
-
-    @DisplayName("корректно добавляет записи в журнал")
-    @Test
-    void shouldCorrectAddJournalEntity() {
-        final int scorePattern = 33;
-        final Student studentPattern = new Student("TestFirst","TestLast");
-        final Exam examPattern = new Exam("test",Collections.EMPTY_LIST);
-        final JournalEntry journalEntryPattern = journalEntryDao.create(studentPattern,examPattern);
-        journalEntryDao.addEntry(journalEntryPattern);
-        final Student studentPattern2 = new Student("TestFirst","TestLast");
-        final Exam examPattern2 = new Exam("test",Collections.EMPTY_LIST);
-        final JournalEntry journalEntryPattern2 = journalEntryDao.create(studentPattern2,examPattern2);
-        journalEntryDao.addEntry(journalEntryPattern2);
-        Assertions.assertThat(journalEntryDao.readAll())
-                .hasSize(2)
-                .containsExactly(journalEntryPattern,journalEntryPattern2);
     }
 }

@@ -1,17 +1,17 @@
 package ru.otus.skruglikov.examiner.provider;
 
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.stereotype.Component;
-import ru.otus.skruglikov.examiner.config.ExaminerConfig;
+import ru.otus.skruglikov.examiner.config.LocaleConfig;
 
 import java.util.Locale;
 
 @Component
-@Data
 public class LocaleProviderAppConfigImpl implements LocaleProvider {
+    @Getter
     private final Locale locale;
 
-    public LocaleProviderAppConfigImpl(final ExaminerConfig config) {
+    public LocaleProviderAppConfigImpl(final LocaleConfig config) {
         locale = config.getLocale();
     }
 
