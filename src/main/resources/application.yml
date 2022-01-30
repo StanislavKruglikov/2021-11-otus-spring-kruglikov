@@ -8,3 +8,5 @@ spring:
   output:
     ansi:
       enabled: always
+  main:
+    allow-circular-references: true

@@ -16,6 +16,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Override
     public Student register() throws RegistrationException {
+        localeIOService.write("");
         final String firstName = getStudentProperty("firstname");
         final String lastName = getStudentProperty("lastname");
         return studentDao.createStudent(firstName,lastName);
