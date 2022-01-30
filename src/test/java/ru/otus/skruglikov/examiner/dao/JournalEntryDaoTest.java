@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-@DisplayName("Класс JournalEntryMemoryDaoImpl")
+@DisplayName("Класс JournalEntryDaoImpl")
 @SpringBootTest
 class JournalEntryDaoTest {
 

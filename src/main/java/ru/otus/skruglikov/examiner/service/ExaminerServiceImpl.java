@@ -5,12 +5,13 @@ import org.springframework.stereotype.Service;
 import ru.otus.skruglikov.examiner.dao.ExamDao;
 import ru.otus.skruglikov.examiner.dao.JournalEntryDao;
 import ru.otus.skruglikov.examiner.domain.*;
+import ru.otus.skruglikov.examiner.exception.EmptyResultException;
 
 @Service
 @RequiredArgsConstructor
 public class ExaminerServiceImpl implements ExaminerService {
 
-    private final IOService ioService;
+    private final LocaleIOService localeIOService;
     private final ExamDao examDao;
     private final JournalEntryDao journalEntryDao;
 
@@ -26,8 +27,10 @@ public class ExaminerServiceImpl implements ExaminerService {
             journalEntry = journalEntryDao.create(student,exam);
             journalEntryDao.setExamScore(journalEntry, examService.startExam(exam));
             examService.showExamResult(journalEntry);
+        } catch (EmptyResultException e) {
+            localeIOService.writeMessage("examiner.emptyexam",examName);
         } catch (Exception e) {
-            ioService.write(e.getMessage());
+            localeIOService.write(e.getMessage());
             e.printStackTrace();
         }
     }
